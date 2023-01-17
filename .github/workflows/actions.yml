@@ -29,19 +29,37 @@ jobs:
             - 'frontend/**'
 
   # JOB to build and test backend code
-  backend:
+  backend-test:
     needs: changes
     if: ${{ needs.changes.outputs.backend == 'true' }}
     runs-on: ubuntu-latest
-    # defaults:
-    #   run:
-    #     working-directory: ./backend
+    defaults:
+      run:
+        working-directory: ./backend
     steps:
       - uses: actions/checkout@v3
-      - name: Lint
-        run: black?
+      - uses: psf/black@stable
+        with:
+          options: "--check --verbose"
+          src: "./src"
+          version: "~= 22.0"
       - name: Test
         run: python manage.py test --parallel
+
+  backend-deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+    steps:
+      - uses: actions/checkout@v3
+      - name: serverless deploy
+        uses: serverless/github-action@v3.1
+        with:
+          args: deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
   # JOB to build and test frontend code
   frontend:
