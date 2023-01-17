@@ -47,6 +47,7 @@ jobs:
         run: python manage.py test --parallel
 
   backend-deploy:
+    needs: [backend-test]
     runs-on: ubuntu-latest
     defaults:
       run:
